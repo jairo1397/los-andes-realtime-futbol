@@ -1,0 +1,713 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contador Regresivo - Valla LED</title>
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Outfit:wght@400;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            /* Default calibrated values for overlay (in percentages and vh/vw) */
+            --overlay-left: 63.5; /* % of width */
+            --overlay-top: 63.5;  /* % of height */
+            --overlay-width: 32.2; /* % of width */
+            --overlay-height: 23.0; /* % of height */
+            
+            /* Font sizes */
+            --overlay-font-size: 23; /* Increased font size (vh) */
+            --overlay-letter-spacing: -0.2; /* vh */
+            --overlay-label-size: 5; /* Increased label size (vh) */
+            --overlay-label-margin: 0; /* vh */
+            
+            /* Background variables */
+            --overlay-bg-opacity: 0; /* Transparent by default */
+            --overlay-color-1: #00a24b;
+            --overlay-color-2: #009041;
+            
+            --dark-bg: #0b0c10;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html, body {
+            height: 100%;
+            width: 100%;
+            margin: 0;
+            padding: 0;
+            background-color: var(--dark-bg);
+            background-image: url('assets/Valla Led 768x320.png');
+            background-repeat: no-repeat;
+            background-position: center center;
+            background-size: contain; /* Ajusta la imagen sin cortarla ni deformarla */
+            display: block; /* Removed flex since there is no wrapper */
+            overflow: hidden;
+            font-family: 'Outfit', sans-serif;
+            color: #ffffff;
+            position: relative;
+        }
+
+        /* Main Content Overlay Container */
+        .content-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 2;
+            pointer-events: none;
+        }
+
+        /* Countdown overlay container */
+        .countdown-overlay {
+            position: absolute;
+            left: calc(var(--overlay-left) * 1vw);
+            top: calc(var(--overlay-top) * 1vh);
+            width: calc(var(--overlay-width) * 1vw);
+            height: calc(var(--overlay-height) * 1vh);
+            /* Linear gradient with adjustable opacity */
+            background: linear-gradient(
+                to right, 
+                rgba(0, 162, 75, var(--overlay-bg-opacity)), 
+                rgba(0, 144, 65, var(--overlay-bg-opacity))
+            );
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-sizing: border-box;
+            z-index: 5;
+            pointer-events: auto;
+            border-radius: 1vh;
+        }
+
+        /* Flex column for digit + label */
+        .time-column {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            width: 8vw;
+        }
+
+        .time-value {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: calc(var(--overlay-font-size) * 1vh);
+            letter-spacing: calc(var(--overlay-letter-spacing) * 1vh);
+            line-height: 1;
+            color: #ffffff;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+        }
+
+        .time-label {
+            font-family: 'Outfit', sans-serif;
+            font-size: calc(var(--overlay-label-size) * 1vh);
+            font-weight: 700;
+            text-transform: uppercase;
+            color: #ffffff;
+            margin-top: calc(var(--overlay-label-margin) * 1vh);
+            line-height: 1;
+            text-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
+        }
+
+        .colon {
+            display: inline-block;
+            text-align: center;
+            width: 2vw;
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: calc(var(--overlay-font-size) * 1vh);
+            color: #ffffff;
+            transform: translateY(calc(-1.2 * 1vh)); 
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+        }
+
+        /* Fallback / Error Display screen overlay */
+        .status-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 5vh;
+            box-sizing: border-box;
+            background: rgba(0, 150, 70, 0.98);
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 5vh;
+        }
+
+        .status-icon {
+            font-size: 10vh;
+            margin-bottom: 2vh;
+        }
+
+        .status-title {
+            font-size: 8vh;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5vh;
+            margin-bottom: 2vh;
+            color: #ffffff;
+            text-shadow: 0 0 15px rgba(0,0,0,0.3);
+        }
+
+        .status-desc {
+            font-family: 'Outfit', sans-serif;
+            font-size: 3.5vh;
+            color: #e0f2f1;
+            line-height: 1.6;
+            max-width: 85%;
+        }
+
+        .status-desc code {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 0.5vh 1.5vh;
+            border-radius: 1vh;
+            color: #ffffff;
+            font-family: monospace;
+            font-size: 3vh;
+        }
+
+        .error-theme {
+            background: rgba(198, 40, 40, 0.98);
+        }
+
+        /* Adjustment panel (Dev Mode) */
+        .adjust-panel {
+            position: fixed;
+            top: 15px;
+            left: 15px;
+            background: rgba(13, 17, 26, 0.95);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 8px;
+            padding: 15px;
+            width: 290px;
+            z-index: 100;
+            font-family: monospace;
+            font-size: 11px;
+            color: #fff;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+            pointer-events: auto;
+        }
+
+        .adjust-header {
+            font-weight: bold;
+            font-size: 12px;
+            margin-bottom: 12px;
+            border-bottom: 1px solid #334155;
+            padding-bottom: 6px;
+            color: #00f2fe;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .adjust-row {
+            display: flex;
+            flex-direction: column;
+            margin-bottom: 8px;
+        }
+
+        .adjust-row label {
+            margin-bottom: 2px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .adjust-row label span {
+            color: #00f2fe;
+            font-weight: bold;
+        }
+
+        .adjust-row input[type="range"] {
+            width: 100%;
+            accent-color: #00f2fe;
+            cursor: pointer;
+        }
+
+        .adjust-colors {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 8px;
+        }
+
+        .adjust-colors .adjust-row {
+            flex: 1;
+            margin-bottom: 0;
+        }
+
+        .adjust-colors input[type="color"] {
+            width: 100%;
+            height: 25px;
+            border: 1px solid #334155;
+            cursor: pointer;
+            background: transparent;
+        }
+
+        .adjust-css-box {
+            margin-top: 12px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .adjust-css-box textarea {
+            height: 140px;
+            background: #0f172a;
+            color: #39ff14;
+            border: 1px solid #334155;
+            padding: 8px;
+            font-family: monospace;
+            font-size: 9px;
+            resize: none;
+            border-radius: 4px;
+            margin-bottom: 6px;
+        }
+
+        .adjust-css-box button {
+            padding: 8px;
+            background: #00f2fe;
+            color: #000;
+            border: none;
+            cursor: pointer;
+            font-weight: bold;
+            border-radius: 4px;
+            font-size: 11px;
+            transition: background 0.2s;
+        }
+
+        .adjust-css-box button:hover {
+            background: #00b8d4;
+        }
+
+        .adjust-help {
+            font-size: 9px;
+            color: #94a3b8;
+            margin-top: 8px;
+            line-height: 1.4;
+            border-top: 1px dashed #334155;
+            padding-top: 8px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Main Content Overlay -->
+    <div class="content-container" id="main-content">
+        <div class="countdown-overlay" id="countdown-overlay">
+            <!-- Days -->
+            <div class="time-column">
+                <span class="time-value" id="days-val">00</span>
+                <span class="time-label">Días</span>
+            </div>
+            
+            <span class="colon">:</span>
+            
+            <!-- Hours -->
+            <div class="time-column">
+                <span class="time-value" id="hours-val">00</span>
+                <span class="time-label">Horas</span>
+            </div>
+            
+            <span class="colon">:</span>
+            
+            <!-- Minutes -->
+            <div class="time-column">
+                <span class="time-value" id="minutes-val">00</span>
+                <span class="time-label">Minutos</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Error Overlay Screen -->
+    <div id="error-screen" class="status-screen error-theme" style="display: none;">
+        <div class="status-icon">⚠️</div>
+        <div class="status-title" id="error-title">Configuración Requerida</div>
+        <div class="status-desc" id="error-desc">
+            Por favor especifique un ID válido.
+        </div>
+    </div>
+
+    <!-- Finished Overlay Screen -->
+    <div id="finished-screen" class="status-screen" style="display: none;">
+        <div class="status-icon">🎉</div>
+        <div class="status-title">Tiempo Completado</div>
+        <div class="status-desc" id="finished-desc">El evento ha comenzado.</div>
+    </div>
+
+    <!-- On-screen Adjustment Tool -->
+    <div id="adjust-panel" class="adjust-panel" style="display: none;">
+        <div class="adjust-header">
+            <span>Ajuste de Posición (Contador)</span>
+            <span style="font-size: 9px; color: #888; cursor: pointer;" onclick="this.parentElement.parentElement.style.display='none'">[X]</span>
+        </div>
+        <div class="adjust-row">
+            <label>Posición X (Left %): <span id="val-left">0</span>%</label>
+            <input type="range" id="range-left" min="0" max="100" step="0.1">
+        </div>
+        <div class="adjust-row">
+            <label>Posición Y (Top %): <span id="val-top">0</span>%</label>
+            <input type="range" id="range-top" min="0" max="100" step="0.1">
+        </div>
+        <div class="adjust-row">
+            <label>Ancho (Width %): <span id="val-width">0</span>%</label>
+            <input type="range" id="range-width" min="10" max="100" step="0.1">
+        </div>
+        <div class="adjust-row">
+            <label>Alto (Height %): <span id="val-height">0</span>%</label>
+            <input type="range" id="range-height" min="5" max="50" step="0.1">
+        </div>
+        <div class="adjust-row">
+            <label>Tamaño Números (vh): <span id="val-font-size">0</span>vh</label>
+            <input type="range" id="range-font-size" min="10" max="40" step="0.1">
+        </div>
+        <div class="adjust-row">
+            <label>Espaciado Letras (vh): <span id="val-letter-spacing">0</span>vh</label>
+            <input type="range" id="range-letter-spacing" min="-2" max="2" step="0.05">
+        </div>
+        <div class="adjust-row">
+            <label>Tamaño Etiquetas (vh): <span id="val-label-size">0</span>vh</label>
+            <input type="range" id="range-label-size" min="1" max="10" step="0.1">
+        </div>
+        <div class="adjust-row">
+            <label>Margen Etiquetas (vh): <span id="val-label-margin">0</span>vh</label>
+            <input type="range" id="range-label-margin" min="-2" max="5" step="0.1">
+        </div>
+        <div class="adjust-row">
+            <label>Opacidad Fondo: <span id="val-opacity">0</span></label>
+            <input type="range" id="range-opacity" min="0" max="1" step="0.05">
+        </div>
+        <div class="adjust-colors">
+            <div class="adjust-row">
+                <label>Color Izq</label>
+                <input type="color" id="color-1">
+            </div>
+            <div class="adjust-row">
+                <label>Color Der</label>
+                <input type="color" id="color-2">
+            </div>
+        </div>
+        <div class="adjust-css-box">
+            <textarea id="css-output" readonly></textarea>
+            <button id="btn-copy">Copiar CSS</button>
+        </div>
+        <div class="adjust-help">
+            • <b>Modo Ajuste</b> activo (?adjust=true)<br>
+            • Presiona <b>'A'</b> para ocultar/mostrar panel.<br>
+            • Usa <b>Flechas</b> para mover el cuadro.<br>
+            • Usa <b>Shift + Flechas</b> para cambiar el tamaño.
+        </div>
+    </div>
+
+    <script>
+        let countdownInterval;
+
+        function showError(title, message) {
+            document.getElementById('main-content').style.display = 'none';
+            document.getElementById('finished-screen').style.display = 'none';
+            
+            const errorScreen = document.getElementById('error-screen');
+            document.getElementById('error-title').textContent = title;
+            document.getElementById('error-desc').innerHTML = message;
+            errorScreen.style.display = 'flex';
+        }
+
+        function showFinished(message) {
+            document.getElementById('countdown-overlay').style.display = 'none';
+            
+            const finishedScreen = document.getElementById('finished-screen');
+            if (message) {
+                document.getElementById('finished-desc').textContent = message;
+            }
+            finishedScreen.style.display = 'flex';
+        }
+
+        async function initCountdown() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const id = urlParams.get('id');
+
+            if (!id) {
+                showError(
+                    "Falta Parámetro ID", 
+                    "Por favor, agregue el parámetro <code>?id=X</code> a la URL para ver el contador.<br>Ejemplos válidos: <code>?id=17</code>, <code>?id=42</code> o <code>?id=64</code>"
+                );
+                return;
+            }
+
+            try {
+                const response = await fetch('countdown_config.json');
+                if (!response.ok) {
+                    throw new Error(`No se pudo cargar countdown_config.json (HTTP ${response.status})`);
+                }
+                
+                const config = await response.json();
+                
+                if (!config[id]) {
+                    const validIds = Object.keys(config).map(k => `<code>${k}</code>`).join(', ');
+                    showError(
+                        "ID No Encontrado", 
+                        `El ID de valla <code>${id}</code> no está definido en la configuración.<br>IDs válidos configurados: ${validIds}`
+                    );
+                    return;
+                }
+
+                const eventData = config[id];
+                const targetDateStr = eventData.targetDate.replace(' ', 'T');
+                const targetTime = new Date(targetDateStr).getTime();
+
+                if (isNaN(targetTime)) {
+                    showError(
+                        "Configuración de Fecha Inválida",
+                        `La fecha configurada para el ID <code>${id}</code> ("${eventData.targetDate}") no tiene un formato válido.`
+                    );
+                    return;
+                }
+
+                const daysVal = document.getElementById('days-val');
+                const hoursVal = document.getElementById('hours-val');
+                const minutesVal = document.getElementById('minutes-val');
+
+                function updateTimer() {
+                    const now = new Date().getTime();
+                    const distance = targetTime - now;
+
+                    if (distance <= 0) {
+                        clearInterval(countdownInterval);
+                        daysVal.textContent = "00";
+                        hoursVal.textContent = "00";
+                        minutesVal.textContent = "00";
+                        showFinished(`${eventData.description || 'El evento'} ha comenzado.`);
+                        return;
+                    }
+
+                    // Calculation for Days, Hours and Minutes
+                    const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+                    const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                    const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+
+                    daysVal.textContent = String(days).padStart(2, '0');
+                    hoursVal.textContent = String(hours).padStart(2, '0');
+                    minutesVal.textContent = String(minutes).padStart(2, '0');
+                }
+
+                updateTimer();
+                countdownInterval = setInterval(updateTimer, 60000);
+                setInterval(updateTimer, 1000);
+
+            } catch (error) {
+                console.error("Error al iniciar el contador:", error);
+                showError(
+                    "Error de Conexión o Datos", 
+                    `No se pudo inicializar la valla LED. Detalle del error: <code>${error.message}</code>`
+                );
+            }
+        }
+
+        // Live visual adjustment logic
+        function setupAdjustmentPanel() {
+            const params = new URLSearchParams(window.location.search);
+            const isAdjustMode = params.get('adjust') === 'true';
+            
+            window.addEventListener('keydown', (e) => {
+                if (e.key.toLowerCase() === 'a') {
+                    const panel = document.getElementById('adjust-panel');
+                    if (panel) {
+                        panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+                    }
+                }
+            });
+
+            if (!isAdjustMode) return;
+            
+            const panel = document.getElementById('adjust-panel');
+            panel.style.display = 'block';
+
+            const root = document.documentElement;
+            const style = getComputedStyle(root);
+            
+            let leftVal = parseFloat(style.getPropertyValue('--overlay-left').trim());
+            let topVal = parseFloat(style.getPropertyValue('--overlay-top').trim());
+            let widthVal = parseFloat(style.getPropertyValue('--overlay-width').trim());
+            let heightVal = parseFloat(style.getPropertyValue('--overlay-height').trim());
+            let fontSizeVal = parseFloat(style.getPropertyValue('--overlay-font-size').trim());
+            let letterSpacingVal = parseFloat(style.getPropertyValue('--overlay-letter-spacing').trim());
+            let labelSizeVal = parseFloat(style.getPropertyValue('--overlay-label-size').trim());
+            let labelMarginVal = parseFloat(style.getPropertyValue('--overlay-label-margin').trim());
+            let opacityVal = parseFloat(style.getPropertyValue('--overlay-bg-opacity').trim());
+            let color1 = style.getPropertyValue('--overlay-color-1').trim();
+            let color2 = style.getPropertyValue('--overlay-color-2').trim();
+
+            const rangeLeft = document.getElementById('range-left');
+            const rangeTop = document.getElementById('range-top');
+            const rangeWidth = document.getElementById('range-width');
+            const rangeHeight = document.getElementById('range-height');
+            const rangeFontSize = document.getElementById('range-font-size');
+            const rangeLetterSpacing = document.getElementById('range-letter-spacing');
+            const rangeLabelSize = document.getElementById('range-label-size');
+            const rangeLabelMargin = document.getElementById('range-label-margin');
+            const rangeOpacity = document.getElementById('range-opacity');
+            const colorPicker1 = document.getElementById('color-1');
+            const colorPicker2 = document.getElementById('color-2');
+            
+            const valLeft = document.getElementById('val-left');
+            const valTop = document.getElementById('val-top');
+            const valWidth = document.getElementById('val-width');
+            const valHeight = document.getElementById('val-height');
+            const valFontSize = document.getElementById('val-font-size');
+            const valLetterSpacing = document.getElementById('val-letter-spacing');
+            const valLabelSize = document.getElementById('val-label-size');
+            const valLabelMargin = document.getElementById('val-label-margin');
+            const valOpacity = document.getElementById('val-opacity');
+            
+            const cssOutput = document.getElementById('css-output');
+            const btnCopy = document.getElementById('btn-copy');
+
+            // Set controls
+            rangeLeft.value = leftVal;
+            rangeTop.value = topVal;
+            rangeWidth.value = widthVal;
+            rangeHeight.value = heightVal;
+            rangeFontSize.value = fontSizeVal;
+            rangeLetterSpacing.value = letterSpacingVal;
+            rangeLabelSize.value = labelSizeVal;
+            rangeLabelMargin.value = labelMarginVal;
+            rangeOpacity.value = opacityVal;
+            colorPicker1.value = color1;
+            colorPicker2.value = color2;
+
+            function updateUI() {
+                valLeft.textContent = leftVal.toFixed(1);
+                valTop.textContent = topVal.toFixed(1);
+                valWidth.textContent = widthVal.toFixed(1);
+                valHeight.textContent = heightVal.toFixed(1);
+                valFontSize.textContent = fontSizeVal.toFixed(1);
+                valLetterSpacing.textContent = letterSpacingVal.toFixed(2);
+                valLabelSize.textContent = labelSizeVal.toFixed(1);
+                valLabelMargin.textContent = labelMarginVal.toFixed(1);
+                valOpacity.textContent = opacityVal.toFixed(2);
+
+                root.style.setProperty('--overlay-left', leftVal);
+                root.style.setProperty('--overlay-top', topVal);
+                root.style.setProperty('--overlay-width', widthVal);
+                root.style.setProperty('--overlay-height', heightVal);
+                root.style.setProperty('--overlay-font-size', fontSizeVal);
+                root.style.setProperty('--overlay-letter-spacing', letterSpacingVal);
+                root.style.setProperty('--overlay-label-size', labelSizeVal);
+                root.style.setProperty('--overlay-label-margin', labelMarginVal);
+                root.style.setProperty('--overlay-bg-opacity', opacityVal);
+                root.style.setProperty('--overlay-color-1', color1);
+                root.style.setProperty('--overlay-color-2', color2);
+
+                const cssCode = `:root {
+    --overlay-left: ${leftVal.toFixed(1)};
+    --overlay-top: ${topVal.toFixed(1)};
+    --overlay-width: ${widthVal.toFixed(1)};
+    --overlay-height: ${heightVal.toFixed(1)};
+    --overlay-font-size: ${fontSizeVal.toFixed(1)};
+    --overlay-letter-spacing: ${letterSpacingVal.toFixed(2)};
+    --overlay-label-size: ${labelSizeVal.toFixed(1)};
+    --overlay-label-margin: ${labelMarginVal.toFixed(1)};
+    --overlay-bg-opacity: ${opacityVal.toFixed(2)};
+    --overlay-color-1: ${color1};
+    --overlay-color-2: ${color2};
+}`;
+                cssOutput.value = cssCode;
+            }
+
+            // Listeners
+            rangeLeft.addEventListener('input', (e) => { leftVal = parseFloat(e.target.value); updateUI(); });
+            rangeTop.addEventListener('input', (e) => { topVal = parseFloat(e.target.value); updateUI(); });
+            rangeWidth.addEventListener('input', (e) => { widthVal = parseFloat(e.target.value); updateUI(); });
+            rangeHeight.addEventListener('input', (e) => { heightVal = parseFloat(e.target.value); updateUI(); });
+            rangeFontSize.addEventListener('input', (e) => { fontSizeVal = parseFloat(e.target.value); updateUI(); });
+            rangeLetterSpacing.addEventListener('input', (e) => { letterSpacingVal = parseFloat(e.target.value); updateUI(); });
+            rangeLabelSize.addEventListener('input', (e) => { labelSizeVal = parseFloat(e.target.value); updateUI(); });
+            rangeLabelMargin.addEventListener('input', (e) => { labelMarginVal = parseFloat(e.target.value); updateUI(); });
+            rangeOpacity.addEventListener('input', (e) => { opacityVal = parseFloat(e.target.value); updateUI(); });
+            colorPicker1.addEventListener('input', (e) => { color1 = e.target.value; updateUI(); });
+            colorPicker2.addEventListener('input', (e) => { color2 = e.target.value; updateUI(); });
+
+            // Keyboard precission controls
+            window.addEventListener('keydown', (e) => {
+                if (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA') {
+                    return;
+                }
+                
+                const step = 0.1;
+                
+                if (e.key === 'ArrowUp') {
+                    e.preventDefault();
+                    if (e.shiftKey) { 
+                        heightVal = Math.max(5, heightVal - step); 
+                        rangeHeight.value = heightVal; 
+                    } else { 
+                        topVal = Math.max(0, topVal - step); 
+                        rangeTop.value = topVal; 
+                    }
+                    updateUI();
+                } else if (e.key === 'ArrowDown') {
+                    e.preventDefault();
+                    if (e.shiftKey) { 
+                        heightVal = Math.min(50, heightVal + step); 
+                        rangeHeight.value = heightVal; 
+                    } else { 
+                        topVal = Math.min(100, topVal + step); 
+                        rangeTop.value = topVal; 
+                    }
+                    updateUI();
+                } else if (e.key === 'ArrowLeft') {
+                    e.preventDefault();
+                    if (e.shiftKey) { 
+                        widthVal = Math.max(10, widthVal - step); 
+                        rangeWidth.value = widthVal; 
+                    } else { 
+                        leftVal = Math.max(0, leftVal - step); 
+                        rangeLeft.value = leftVal; 
+                    }
+                    updateUI();
+                } else if (e.key === 'ArrowRight') {
+                    e.preventDefault();
+                    if (e.shiftKey) { 
+                        widthVal = Math.min(100, widthVal + step); 
+                        rangeWidth.value = widthVal; 
+                    } else { 
+                        leftVal = Math.min(100, leftVal + step); 
+                        rangeLeft.value = leftVal; 
+                    }
+                    updateUI();
+                }
+            });
+
+            btnCopy.addEventListener('click', () => {
+                navigator.clipboard.writeText(cssOutput.value).then(() => {
+                    btnCopy.textContent = '¡Copiado!';
+                    setTimeout(() => { btnCopy.textContent = 'Copiar CSS'; }, 1500);
+                }).catch(err => {
+                    cssOutput.select();
+                    document.execCommand('copy');
+                    btnCopy.textContent = '¡Copiado!';
+                    setTimeout(() => { btnCopy.textContent = 'Copiar CSS'; }, 1500);
+                });
+            });
+
+            updateUI();
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            initCountdown();
+            setupAdjustmentPanel();
+        });
+    </script>
+</body>
+</html>
