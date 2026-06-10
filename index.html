@@ -37,7 +37,13 @@
             padding: 0;
         }
 
-        html, body {
+        html {
+            background-color: #000000;
+            height: 100%;
+            width: 100%;
+        }
+
+        body {
             height: 100%;
             width: 100%;
             margin: 0;
@@ -52,6 +58,7 @@
             font-family: 'Outfit', sans-serif;
             color: #ffffff;
             position: relative;
+            opacity: 0;
         }
 
         /* Main Content Overlay Container */
@@ -686,6 +693,16 @@
         window.addEventListener('DOMContentLoaded', () => {
             initCountdown();
             setupAdjustmentPanel();
+        });
+
+        window.addEventListener('load', () => {
+            if (document.fonts) {
+                document.fonts.ready.then(() => {
+                    document.body.style.opacity = '1';
+                });
+            } else {
+                document.body.style.opacity = '1';
+            }
         });
     </script>
 </body>
