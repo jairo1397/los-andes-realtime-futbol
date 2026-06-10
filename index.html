@@ -335,13 +335,6 @@
         </div>
     </div>
 
-    <!-- Finished Overlay Screen -->
-    <div id="finished-screen" class="status-screen" style="display: none;">
-        <div class="status-icon">🎉</div>
-        <div class="status-title">Tiempo Completado</div>
-        <div class="status-desc" id="finished-desc">El evento ha comenzado.</div>
-    </div>
-
     <!-- On-screen Adjustment Tool -->
     <div id="adjust-panel" class="adjust-panel" style="display: none;">
         <div class="adjust-header">
@@ -411,7 +404,6 @@
 
         function showError(title, message) {
             document.getElementById('main-content').style.display = 'none';
-            document.getElementById('finished-screen').style.display = 'none';
             
             const errorScreen = document.getElementById('error-screen');
             document.getElementById('error-title').textContent = title;
@@ -419,15 +411,7 @@
             errorScreen.style.display = 'flex';
         }
 
-        function showFinished(message) {
-            document.getElementById('countdown-overlay').style.display = 'none';
-            
-            const finishedScreen = document.getElementById('finished-screen');
-            if (message) {
-                document.getElementById('finished-desc').textContent = message;
-            }
-            finishedScreen.style.display = 'flex';
-        }
+
 
         async function initCountdown() {
             const urlParams = new URLSearchParams(window.location.search);
@@ -483,7 +467,6 @@
                         daysVal.textContent = "00";
                         hoursVal.textContent = "00";
                         minutesVal.textContent = "00";
-                        showFinished(`${eventData.description || 'El evento'} ha comenzado.`);
                         return;
                     }
 
