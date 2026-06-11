@@ -1,14 +1,26 @@
 {
   "17": {
     "targetDate": "2026-06-14 18:00:00",
-    "description": "Costa de Marfil vs Ecuador"
+    "description": "Costa de Marfil vs Ecuador",
+    "pais_1": "CIV",
+    "pais_2": "ECU",
+    "img_1": "https://flagcdn.com/w160/ci.png",
+    "img_2": "https://flagcdn.com/w160/ec.png"
   },
   "42": {
     "targetDate": "2026-06-20 19:00:00",
-    "description": "Ecuador vs Curazao"
+    "description": "Ecuador vs Curazao",
+    "pais_1": "ECU",
+    "pais_2": "CUW",
+    "img_1": "https://flagcdn.com/w160/ec.png",
+    "img_2": "https://flagcdn.com/w160/cw.png"
   },
   "64": {
     "targetDate": "2026-06-25 15:00:00",
-    "description": "Ecuador vs Alemania"
+    "description": "Ecuador vs Alemania",
+    "pais_1": "ECU",
+    "pais_2": "GER",
+    "img_1": "https://flagcdn.com/w160/ec.png",
+    "img_2": "https://flagcdn.com/w160/de.png"
   }
 }

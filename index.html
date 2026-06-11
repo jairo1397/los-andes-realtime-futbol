@@ -13,9 +13,11 @@
         :root {
             /* Default calibrated values for overlay (in percentages and vh/vw) */
             --overlay-left: 63.5; /* % of width */
-            --overlay-top: 63.5;  /* % of height */
+            --overlay-top: 69;  /* % of height */
             --overlay-width: 32.2; /* % of width */
             --overlay-height: 23.0; /* % of height */
+            
+            --match-overlay-top: 40; /* % of height */
             
             /* Font sizes */
             --overlay-font-size: 23; /* Increased font size (vh) */
@@ -49,7 +51,7 @@
             margin: 0;
             padding: 0;
             background-color: var(--dark-bg);
-            background-image: url('assets/Los andes fondo final.png');
+            background-image: url('assets/Los andes fondo final.jpeg');
             background-repeat: no-repeat;
             background-position: center center;
             background-size: contain; /* Ajusta la imagen sin cortarla ni deformarla */
@@ -59,6 +61,52 @@
             color: #ffffff;
             position: relative;
             opacity: 0;
+        }
+
+        /* Match Info Overlay Container */
+        .match-info-overlay {
+            position: absolute;
+            left: 67vw;
+            top: 12vw;
+            width: 27vw;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10vw;
+            z-index: 5;
+        }
+
+        .team {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1vh;
+        }
+
+        .team img {
+            height: 18vh;
+            border-radius: 0.5vh;
+            box-shadow: 0 0 1vh rgba(0,0,0,0.5);
+            object-fit: cover;
+        }
+
+        .team-name {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 7vh;
+            color: #ffffff;
+            line-height: 1;
+            letter-spacing: 0.2vh;
+            text-shadow: 0.2vh 0.2vh 0.5vh rgba(0,0,0,0.8);
+        }
+
+        .vs-text {
+            font-family: 'Outfit', sans-serif;
+            font-size: 3.5vh;
+            font-weight: 700;
+            color: #ffffff;
+            opacity: 0.8;
+            margin: 0 1vw;
+            text-shadow: 0.2vh 0.2vh 0.5vh rgba(0,0,0,0.8);
         }
 
         /* Main Content Overlay Container */
@@ -92,6 +140,7 @@
             z-index: 5;
             pointer-events: auto;
             border-radius: 1vh;
+            transform: scale(0.9);
         }
 
         /* Flex column for digit + label */
@@ -308,6 +357,17 @@
 
     <!-- Main Content Overlay -->
     <div class="content-container" id="main-content">
+        <div class="match-info-overlay" id="match-info-overlay" style="display: none;">
+            <div class="team">
+                <img id="img-team1" src="" alt="Team 1">
+                <span id="name-team1" class="team-name"></span>
+            </div>
+            <div class="team">
+                <img id="img-team2" src="" alt="Team 2">
+                <span id="name-team2" class="team-name"></span>
+            </div>
+        </div>
+
         <div class="countdown-overlay" id="countdown-overlay">
             <!-- Days -->
             <div class="time-column">
@@ -355,6 +415,10 @@
         <div class="adjust-row">
             <label>Posición Y (Top %): <span id="val-top">0</span>%</label>
             <input type="range" id="range-top" min="0" max="100" step="0.1">
+        </div>
+        <div class="adjust-row">
+            <label>Posición Y Equipos: <span id="val-match-top">0</span>%</label>
+            <input type="range" id="range-match-top" min="0" max="100" step="0.1">
         </div>
         <div class="adjust-row">
             <label>Ancho (Width %): <span id="val-width">0</span>%</label>
@@ -461,6 +525,14 @@
                     return;
                 }
 
+                if (eventData.pais_1 && eventData.pais_2) {
+                    document.getElementById('name-team1').textContent = eventData.pais_1;
+                    document.getElementById('name-team2').textContent = eventData.pais_2;
+                    document.getElementById('img-team1').src = eventData.img_1;
+                    document.getElementById('img-team2').src = eventData.img_2;
+                    document.getElementById('match-info-overlay').style.display = 'flex';
+                }
+
                 const daysVal = document.getElementById('days-val');
                 const hoursVal = document.getElementById('hours-val');
                 const minutesVal = document.getElementById('minutes-val');
@@ -524,6 +596,7 @@
             
             let leftVal = parseFloat(style.getPropertyValue('--overlay-left').trim());
             let topVal = parseFloat(style.getPropertyValue('--overlay-top').trim());
+            let matchTopVal = parseFloat(style.getPropertyValue('--match-overlay-top').trim() || 55);
             let widthVal = parseFloat(style.getPropertyValue('--overlay-width').trim());
             let heightVal = parseFloat(style.getPropertyValue('--overlay-height').trim());
             let fontSizeVal = parseFloat(style.getPropertyValue('--overlay-font-size').trim());
@@ -536,6 +609,7 @@
 
             const rangeLeft = document.getElementById('range-left');
             const rangeTop = document.getElementById('range-top');
+            const rangeMatchTop = document.getElementById('range-match-top');
             const rangeWidth = document.getElementById('range-width');
             const rangeHeight = document.getElementById('range-height');
             const rangeFontSize = document.getElementById('range-font-size');
@@ -548,6 +622,7 @@
             
             const valLeft = document.getElementById('val-left');
             const valTop = document.getElementById('val-top');
+            const valMatchTop = document.getElementById('val-match-top');
             const valWidth = document.getElementById('val-width');
             const valHeight = document.getElementById('val-height');
             const valFontSize = document.getElementById('val-font-size');
@@ -562,6 +637,7 @@
             // Set controls
             rangeLeft.value = leftVal;
             rangeTop.value = topVal;
+            rangeMatchTop.value = matchTopVal;
             rangeWidth.value = widthVal;
             rangeHeight.value = heightVal;
             rangeFontSize.value = fontSizeVal;
@@ -575,6 +651,7 @@
             function updateUI() {
                 valLeft.textContent = leftVal.toFixed(1);
                 valTop.textContent = topVal.toFixed(1);
+                valMatchTop.textContent = matchTopVal.toFixed(1);
                 valWidth.textContent = widthVal.toFixed(1);
                 valHeight.textContent = heightVal.toFixed(1);
                 valFontSize.textContent = fontSizeVal.toFixed(1);
@@ -585,6 +662,7 @@
 
                 root.style.setProperty('--overlay-left', leftVal);
                 root.style.setProperty('--overlay-top', topVal);
+                root.style.setProperty('--match-overlay-top', matchTopVal);
                 root.style.setProperty('--overlay-width', widthVal);
                 root.style.setProperty('--overlay-height', heightVal);
                 root.style.setProperty('--overlay-font-size', fontSizeVal);
@@ -598,6 +676,7 @@
                 const cssCode = `:root {
     --overlay-left: ${leftVal.toFixed(1)};
     --overlay-top: ${topVal.toFixed(1)};
+    --match-overlay-top: ${matchTopVal.toFixed(1)};
     --overlay-width: ${widthVal.toFixed(1)};
     --overlay-height: ${heightVal.toFixed(1)};
     --overlay-font-size: ${fontSizeVal.toFixed(1)};
@@ -614,6 +693,7 @@
             // Listeners
             rangeLeft.addEventListener('input', (e) => { leftVal = parseFloat(e.target.value); updateUI(); });
             rangeTop.addEventListener('input', (e) => { topVal = parseFloat(e.target.value); updateUI(); });
+            rangeMatchTop.addEventListener('input', (e) => { matchTopVal = parseFloat(e.target.value); updateUI(); });
             rangeWidth.addEventListener('input', (e) => { widthVal = parseFloat(e.target.value); updateUI(); });
             rangeHeight.addEventListener('input', (e) => { heightVal = parseFloat(e.target.value); updateUI(); });
             rangeFontSize.addEventListener('input', (e) => { fontSizeVal = parseFloat(e.target.value); updateUI(); });
