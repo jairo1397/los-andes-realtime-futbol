@@ -80,23 +80,24 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 1vh;
+            gap: 2vh;
         }
 
         .team img {
             height: 18vh;
             border-radius: 0.5vh;
-            box-shadow: 0 0 1vh rgba(0,0,0,0.5);
+            box-shadow: 0 1.5vh 3vh rgba(0, 0, 0, 0.85);
+            filter: drop-shadow(0 0.5vh 1vh rgba(0, 0, 0, 0.6));
             object-fit: cover;
         }
 
         .team-name {
-            font-family: 'Bebas Neue', sans-serif;
+            font-family: 'Outfit', sans-serif;
             font-size: 7vh;
             color: #ffffff;
             line-height: 1;
             letter-spacing: 0.2vh;
-            text-shadow: 0.2vh 0.2vh 0.5vh rgba(0,0,0,0.8);
+            font-weight: bold;
         }
 
         .vs-text {
@@ -526,10 +527,23 @@
                 }
 
                 if (eventData.pais_1 && eventData.pais_2) {
-                    document.getElementById('name-team1').textContent = eventData.pais_1;
-                    document.getElementById('name-team2').textContent = eventData.pais_2;
-                    document.getElementById('img-team1').src = eventData.img_1;
-                    document.getElementById('img-team2').src = eventData.img_2;
+                    let team1Name = eventData.pais_1;
+                    let team2Name = eventData.pais_2;
+                    let team1Img = eventData.img_1;
+                    let team2Img = eventData.img_2;
+
+                    // Siempre mostrar a Ecuador primero (a la izquierda)
+                    if (team2Name.toUpperCase() === "ECU" || team2Name.toUpperCase() === "ECUADOR") {
+                        team1Name = eventData.pais_2;
+                        team2Name = eventData.pais_1;
+                        team1Img = eventData.img_2;
+                        team2Img = eventData.img_1;
+                    }
+
+                    document.getElementById('name-team1').textContent = team1Name;
+                    document.getElementById('name-team2').textContent = team2Name;
+                    document.getElementById('img-team1').src = team1Img;
+                    document.getElementById('img-team2').src = team2Img;
                     document.getElementById('match-info-overlay').style.display = 'flex';
                 }
 
